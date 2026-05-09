@@ -14,16 +14,299 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      donations: {
+        Row: {
+          amount: number
+          anonymous: boolean
+          created_at: string
+          currency: string
+          donation_type: string
+          donor_email: string | null
+          donor_name: string | null
+          id: string
+          message: string | null
+          project_id: string | null
+          status: string
+          stripe_session_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          anonymous?: boolean
+          created_at?: string
+          currency?: string
+          donation_type?: string
+          donor_email?: string | null
+          donor_name?: string | null
+          id?: string
+          message?: string | null
+          project_id?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          anonymous?: boolean
+          created_at?: string
+          currency?: string
+          donation_type?: string
+          donor_email?: string | null
+          donor_name?: string | null
+          id?: string
+          message?: string | null
+          project_id?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      monthly_reports: {
+        Row: {
+          allocations: Json
+          attachment_url: string | null
+          beneficiaries_reached: number
+          created_at: string
+          headline: string
+          id: string
+          month: string
+          narrative: string | null
+          published: boolean
+          total_distributed: number
+          total_raised: number
+          updated_at: string
+        }
+        Insert: {
+          allocations?: Json
+          attachment_url?: string | null
+          beneficiaries_reached?: number
+          created_at?: string
+          headline: string
+          id?: string
+          month: string
+          narrative?: string | null
+          published?: boolean
+          total_distributed?: number
+          total_raised?: number
+          updated_at?: string
+        }
+        Update: {
+          allocations?: Json
+          attachment_url?: string | null
+          beneficiaries_reached?: number
+          created_at?: string
+          headline?: string
+          id?: string
+          month?: string
+          narrative?: string | null
+          published?: boolean
+          total_distributed?: number
+          total_raised?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          country: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          country?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          country?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          beneficiaries: number
+          category: string
+          country: string
+          created_at: string
+          description: string | null
+          featured: boolean
+          fund_allocation: Json
+          goal_amount: number
+          id: string
+          image_url: string | null
+          lat: number | null
+          lng: number | null
+          milestones: Json
+          name: string
+          raised_amount: number
+          region: string | null
+          slug: string
+          status: string
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          beneficiaries?: number
+          category: string
+          country: string
+          created_at?: string
+          description?: string | null
+          featured?: boolean
+          fund_allocation?: Json
+          goal_amount?: number
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          milestones?: Json
+          name: string
+          raised_amount?: number
+          region?: string | null
+          slug: string
+          status?: string
+          summary: string
+          updated_at?: string
+        }
+        Update: {
+          beneficiaries?: number
+          category?: string
+          country?: string
+          created_at?: string
+          description?: string | null
+          featured?: boolean
+          fund_allocation?: Json
+          goal_amount?: number
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          milestones?: Json
+          name?: string
+          raised_amount?: number
+          region?: string | null
+          slug?: string
+          status?: string
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      volunteer_applications: {
+        Row: {
+          availability: string
+          created_at: string
+          email: string
+          full_name: string
+          hours_per_week: number | null
+          id: string
+          motivation: string | null
+          phone: string | null
+          regions: string[]
+          remote_ok: boolean
+          skills: string[]
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          availability: string
+          created_at?: string
+          email: string
+          full_name: string
+          hours_per_week?: number | null
+          id?: string
+          motivation?: string | null
+          phone?: string | null
+          regions?: string[]
+          remote_ok?: boolean
+          skills?: string[]
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          availability?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          hours_per_week?: number | null
+          id?: string
+          motivation?: string | null
+          phone?: string | null
+          regions?: string[]
+          remote_ok?: boolean
+          skills?: string[]
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "member"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +433,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "member"],
+    },
   },
 } as const
