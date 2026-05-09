@@ -85,7 +85,7 @@ function VolunteerPage() {
           setEmail(data.email);
           setPhone(data.phone ?? "");
           setSkills(data.skills ?? []);
-          setAvailability(data.availability);
+          setAvailability(data.availability as any);
           setHours(data.hours_per_week ?? 5);
           setRegions(data.regions ?? []);
           setRemoteOk(data.remote_ok);
