@@ -178,7 +178,7 @@ export const Route = createFileRoute("/api/public/webhooks/stripe")({
 
         const { data: updated } = await supabaseAdmin
           .from("donations")
-          .update(updates)
+          .update(updates as never)
           .eq("id", donation.id)
           .select("*")
           .maybeSingle();
