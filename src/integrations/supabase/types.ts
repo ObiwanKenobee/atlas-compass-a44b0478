@@ -18,15 +18,20 @@ export type Database = {
         Row: {
           amount: number
           anonymous: boolean
+          confirmed_at: string | null
           created_at: string
           currency: string
           donation_type: string
           donor_email: string | null
           donor_name: string | null
+          failure_reason: string | null
           id: string
           message: string | null
           project_id: string | null
+          receipt_url: string | null
           status: string
+          stripe_invoice_id: string | null
+          stripe_payment_intent_id: string | null
           stripe_session_id: string | null
           stripe_subscription_id: string | null
           updated_at: string
@@ -35,15 +40,20 @@ export type Database = {
         Insert: {
           amount: number
           anonymous?: boolean
+          confirmed_at?: string | null
           created_at?: string
           currency?: string
           donation_type?: string
           donor_email?: string | null
           donor_name?: string | null
+          failure_reason?: string | null
           id?: string
           message?: string | null
           project_id?: string | null
+          receipt_url?: string | null
           status?: string
+          stripe_invoice_id?: string | null
+          stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string
@@ -52,15 +62,20 @@ export type Database = {
         Update: {
           amount?: number
           anonymous?: boolean
+          confirmed_at?: string | null
           created_at?: string
           currency?: string
           donation_type?: string
           donor_email?: string | null
           donor_name?: string | null
+          failure_reason?: string | null
           id?: string
           message?: string | null
           project_id?: string | null
+          receipt_url?: string | null
           status?: string
+          stripe_invoice_id?: string | null
+          stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string
@@ -87,9 +102,12 @@ export type Database = {
           month: string
           narrative: string | null
           published: boolean
+          share_url: string | null
           total_distributed: number
           total_raised: number
           updated_at: string
+          verified: boolean
+          verified_by: string | null
         }
         Insert: {
           allocations?: Json
@@ -101,9 +119,12 @@ export type Database = {
           month: string
           narrative?: string | null
           published?: boolean
+          share_url?: string | null
           total_distributed?: number
           total_raised?: number
           updated_at?: string
+          verified?: boolean
+          verified_by?: string | null
         }
         Update: {
           allocations?: Json
@@ -115,9 +136,12 @@ export type Database = {
           month?: string
           narrative?: string | null
           published?: boolean
+          share_url?: string | null
           total_distributed?: number
           total_raised?: number
           updated_at?: string
+          verified?: boolean
+          verified_by?: string | null
         }
         Relationships: []
       }
@@ -219,6 +243,41 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      stripe_events: {
+        Row: {
+          created_at: string
+          donation_id: string | null
+          event_id: string
+          id: string
+          payload: Json
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          donation_id?: string | null
+          event_id: string
+          id?: string
+          payload?: Json
+          type: string
+        }
+        Update: {
+          created_at?: string
+          donation_id?: string | null
+          event_id?: string
+          id?: string
+          payload?: Json
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_events_donation_id_fkey"
+            columns: ["donation_id"]
+            isOneToOne: false
+            referencedRelation: "donations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
