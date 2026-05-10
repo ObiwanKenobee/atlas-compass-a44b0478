@@ -22,6 +22,7 @@ import { Route as DonateSuccessRouteImport } from './routes/donate.success'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminStripeRouteImport } from './routes/_authenticated/admin.stripe'
+import { Route as ApiPublicWebhooksStripeRouteImport } from './routes/api/public/webhooks/stripe'
 
 const VolunteerRoute = VolunteerRouteImport.update({
   id: '/volunteer',
@@ -88,6 +89,11 @@ const AuthenticatedAdminStripeRoute =
     path: '/stripe',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const ApiPublicWebhooksStripeRoute = ApiPublicWebhooksStripeRouteImport.update({
+  id: '/api/public/webhooks/stripe',
+  path: '/api/public/webhooks/stripe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/donate/success': typeof DonateSuccessRoute
   '/projects/$slug': typeof ProjectsSlugRoute
   '/admin/stripe': typeof AuthenticatedAdminStripeRoute
+  '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/donate/success': typeof DonateSuccessRoute
   '/projects/$slug': typeof ProjectsSlugRoute
   '/admin/stripe': typeof AuthenticatedAdminStripeRoute
+  '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -132,6 +140,7 @@ export interface FileRoutesById {
   '/donate/success': typeof DonateSuccessRoute
   '/projects/$slug': typeof ProjectsSlugRoute
   '/_authenticated/admin/stripe': typeof AuthenticatedAdminStripeRoute
+  '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -148,6 +157,7 @@ export interface FileRouteTypes {
     | '/donate/success'
     | '/projects/$slug'
     | '/admin/stripe'
+    | '/api/public/webhooks/stripe'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
     | '/donate/success'
     | '/projects/$slug'
     | '/admin/stripe'
+    | '/api/public/webhooks/stripe'
   id:
     | '__root__'
     | '/'
@@ -177,6 +188,7 @@ export interface FileRouteTypes {
     | '/donate/success'
     | '/projects/$slug'
     | '/_authenticated/admin/stripe'
+    | '/api/public/webhooks/stripe'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -188,6 +200,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   TransparencyRoute: typeof TransparencyRoute
   VolunteerRoute: typeof VolunteerRoute
+  ApiPublicWebhooksStripeRoute: typeof ApiPublicWebhooksStripeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -283,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminStripeRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/api/public/webhooks/stripe': {
+      id: '/api/public/webhooks/stripe'
+      path: '/api/public/webhooks/stripe'
+      fullPath: '/api/public/webhooks/stripe'
+      preLoaderRoute: typeof ApiPublicWebhooksStripeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -343,7 +363,18 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   TransparencyRoute: TransparencyRoute,
   VolunteerRoute: VolunteerRoute,
+  ApiPublicWebhooksStripeRoute: ApiPublicWebhooksStripeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
