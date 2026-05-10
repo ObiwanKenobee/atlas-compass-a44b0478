@@ -21,6 +21,7 @@ import { Route as ProjectsSlugRouteImport } from './routes/projects.$slug'
 import { Route as DonateSuccessRouteImport } from './routes/donate.success'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as AuthenticatedAdminStripeRouteImport } from './routes/_authenticated/admin.stripe'
 
 const VolunteerRoute = VolunteerRouteImport.update({
   id: '/volunteer',
@@ -81,6 +82,12 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminStripeRoute =
+  AuthenticatedAdminStripeRouteImport.update({
+    id: '/stripe',
+    path: '/stripe',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -91,9 +98,10 @@ export interface FileRoutesByFullPath {
   '/transparency': typeof TransparencyRoute
   '/volunteer': typeof VolunteerRoute
   '/account': typeof AuthenticatedAccountRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/donate/success': typeof DonateSuccessRoute
   '/projects/$slug': typeof ProjectsSlugRoute
+  '/admin/stripe': typeof AuthenticatedAdminStripeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -104,9 +112,10 @@ export interface FileRoutesByTo {
   '/transparency': typeof TransparencyRoute
   '/volunteer': typeof VolunteerRoute
   '/account': typeof AuthenticatedAccountRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/donate/success': typeof DonateSuccessRoute
   '/projects/$slug': typeof ProjectsSlugRoute
+  '/admin/stripe': typeof AuthenticatedAdminStripeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -119,9 +128,10 @@ export interface FileRoutesById {
   '/transparency': typeof TransparencyRoute
   '/volunteer': typeof VolunteerRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/donate/success': typeof DonateSuccessRoute
   '/projects/$slug': typeof ProjectsSlugRoute
+  '/_authenticated/admin/stripe': typeof AuthenticatedAdminStripeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/donate/success'
     | '/projects/$slug'
+    | '/admin/stripe'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/donate/success'
     | '/projects/$slug'
+    | '/admin/stripe'
   id:
     | '__root__'
     | '/'
@@ -164,6 +176,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/donate/success'
     | '/projects/$slug'
+    | '/_authenticated/admin/stripe'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -263,17 +276,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/stripe': {
+      id: '/_authenticated/admin/stripe'
+      path: '/stripe'
+      fullPath: '/admin/stripe'
+      preLoaderRoute: typeof AuthenticatedAdminStripeRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminStripeRoute: typeof AuthenticatedAdminStripeRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminStripeRoute: AuthenticatedAdminStripeRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -316,3 +347,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
