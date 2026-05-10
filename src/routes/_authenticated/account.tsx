@@ -117,7 +117,7 @@ function AccountPage() {
               </div>
             </div>
 
-            <aside>
+            <aside className="space-y-6">
               <div className="rounded-2xl border border-border bg-card p-6">
                 <h2 className="font-display text-xl font-semibold">Volunteer</h2>
                 {application ? (
@@ -138,6 +138,35 @@ function AccountPage() {
                     <Link to="/volunteer">
                       <Button className="mt-4 w-full">Apply to volunteer</Button>
                     </Link>
+                  </>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-gold/30 bg-gold/5 p-6">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-gold">
+                  <ShieldCheck className="h-3 w-3" /> Citadel control
+                </div>
+                {isAdmin ? (
+                  <>
+                    <h2 className="mt-3 font-display text-xl font-semibold">You are an admin</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Open the admin console to view donations, applications, and the Stripe checklist.
+                    </p>
+                    <Link to="/admin">
+                      <Button className="mt-4 w-full">Open admin console</Button>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="mt-3 font-display text-xl font-semibold">Claim admin access</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {claimResult === "taken"
+                        ? "An admin already exists for this Citadel. Ask them to promote you."
+                        : "If no admin has been set up yet, you can claim the first admin role for this Citadel."}
+                    </p>
+                    <Button onClick={claimAdmin} disabled={claiming || claimResult === "taken"} className="mt-4 w-full">
+                      {claiming ? "Claiming…" : "Claim first-admin role"}
+                    </Button>
                   </>
                 )}
               </div>
