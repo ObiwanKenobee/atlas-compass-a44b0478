@@ -59,10 +59,22 @@ function AdminPage() {
       <main className="pt-16">
         <section className="border-b border-border bg-sacred grain text-ivory">
           <div className="mx-auto max-w-7xl px-6 py-16">
-            <div className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-midnight-deep/40 px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-gold">
-              <ShieldCheck className="h-3 w-3" /> Admin Console
+            <div className="flex flex-wrap items-start justify-between gap-6">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-midnight-deep/40 px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-gold">
+                  <ShieldCheck className="h-3 w-3" /> Admin Console
+                </div>
+                <h1 className="mt-6 font-display text-4xl font-semibold md:text-5xl">Citadel control.</h1>
+                <p className="mt-3 text-sm text-ivory/70">
+                  Donations currently save as <span className="text-gold">pending</span> until Stripe is wired.
+                </p>
+              </div>
+              <Link to="/admin/stripe">
+                <Button className="bg-gold-gradient text-midnight-deep shadow-glow hover:opacity-95">
+                  Stripe enablement →
+                </Button>
+              </Link>
             </div>
-            <h1 className="mt-6 font-display text-4xl font-semibold md:text-5xl">Citadel control.</h1>
           </div>
         </section>
 
