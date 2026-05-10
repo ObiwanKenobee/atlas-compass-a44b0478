@@ -139,7 +139,7 @@ export const Route = createFileRoute("/api/public/webhooks/stripe")({
           return Response.json({ received: true, matched: false });
         }
 
-        const updates: Record<string, unknown> = {};
+        const updates: Record<string, any> = {};
         let shouldEmail = false;
 
         switch (eventType) {
