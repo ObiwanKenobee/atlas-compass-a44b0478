@@ -11,7 +11,7 @@ import story3 from "@/assets/story-3.jpg";
 import {
   ArrowRight,
   Heart,
-  Sparkles,
+  
   ShieldCheck,
   Globe2,
   Users,
