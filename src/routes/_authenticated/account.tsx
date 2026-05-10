@@ -16,7 +16,26 @@ export const Route = createFileRoute("/_authenticated/account")({
 });
 
 function AccountPage() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const [claiming, setClaiming] = useState(false);
+  const [claimResult, setClaimResult] = useState<"available" | "taken" | null>(null);
+
+  const claimAdmin = async () => {
+    setClaiming(true);
+    const { data, error } = await supabase.rpc("claim_first_admin");
+    setClaiming(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    if (data) {
+      toast.success("You are now an admin. Reloading…");
+      setTimeout(() => window.location.assign("/admin"), 800);
+    } else {
+      setClaimResult("taken");
+      toast.error("An admin already exists. Ask them to grant you the role.");
+    }
+  };
   const [profile, setProfile] = useState<any>(null);
   const [donations, setDonations] = useState<any[]>([]);
   const [application, setApplication] = useState<any>(null);
