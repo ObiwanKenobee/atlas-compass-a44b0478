@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Heart, HandHeart, User as UserIcon } from "lucide-react";
+import { Heart, HandHeart, User as UserIcon, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/atlas/SiteHeader";
 import { SiteFooter } from "@/components/atlas/SiteFooter";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
