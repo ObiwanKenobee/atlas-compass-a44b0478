@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ShieldCheck, CheckCircle2, FileText, MapPin, Download, ArrowRight } from "lucide-react";
+import { ShieldCheck, CheckCircle2, FileText, MapPin, Download, ArrowRight, Share2, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/atlas/SiteHeader";
 import { SiteFooter } from "@/components/atlas/SiteFooter";
