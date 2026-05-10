@@ -74,6 +74,11 @@ function AdminPage() {
                   Stripe enablement →
                 </Button>
               </Link>
+              <Link to="/admin/donations">
+                <Button variant="outline" className="border-ivory/30 bg-transparent text-ivory hover:bg-ivory/10">
+                  All donations →
+                </Button>
+              </Link>
             </div>
           </div>
         </section>

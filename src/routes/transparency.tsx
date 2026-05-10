@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ShieldCheck, CheckCircle2, FileText, MapPin, Download, ArrowRight } from "lucide-react";
+import { ShieldCheck, CheckCircle2, FileText, MapPin, Download, ArrowRight, Share2, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/atlas/SiteHeader";
 import { SiteFooter } from "@/components/atlas/SiteFooter";
@@ -43,6 +44,10 @@ type Report = {
   total_distributed: number;
   beneficiaries_reached: number;
   allocations: Record<string, number>;
+  attachment_url: string | null;
+  share_url: string | null;
+  verified: boolean;
+  verified_by: string | null;
 };
 
 function TransparencyPage() {
@@ -180,9 +185,16 @@ function TransparencyPage() {
               {reports.map((r) => {
                 const date = new Date(r.month);
                 return (
-                  <div key={r.id} className="flex flex-col rounded-2xl border border-border bg-card p-6">
-                    <div className="text-xs uppercase tracking-widest text-muted-foreground">
-                      {date.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
+                  <div key={r.id} id={r.id} className="flex flex-col rounded-2xl border border-border bg-card p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs uppercase tracking-widest text-muted-foreground">
+                        {date.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
+                      </div>
+                      {r.verified && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-hope/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-hope">
+                          <ShieldCheck className="h-3 w-3" /> Verified
+                        </span>
+                      )}
                     </div>
                     <h3 className="mt-2 font-display text-xl font-semibold">{r.headline}</h3>
                     <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">{r.narrative}</p>
@@ -202,10 +214,36 @@ function TransparencyPage() {
                       </div>
                     </dl>
 
-                    <Button variant="ghost" className="mt-5 justify-between px-0 hover:bg-transparent">
-                      <span className="text-sm"><FileText className="mr-2 inline h-4 w-4" /> Read full report</span>
-                      <Download className="h-4 w-4" />
-                    </Button>
+                    {r.verified_by && <p className="mt-3 text-[11px] text-muted-foreground">Audited by {r.verified_by}</p>}
+
+                    <div className="mt-auto flex items-center gap-2 pt-5">
+                      {r.attachment_url ? (
+                        <a href={r.attachment_url} target="_blank" rel="noopener noreferrer" className="flex-1">
+                          <Button variant="outline" className="w-full">
+                            <FileText className="mr-2 h-4 w-4" /> Read report <ExternalLink className="ml-2 h-3 w-3" />
+                          </Button>
+                        </a>
+                      ) : (
+                        <Button variant="outline" className="flex-1" disabled>
+                          <FileText className="mr-2 h-4 w-4" /> Pending publish
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Share proof link"
+                        onClick={async () => {
+                          const url = r.share_url ?? r.attachment_url ?? `${window.location.origin}/transparency#${r.id}`;
+                          if (navigator.share) {
+                            try { await navigator.share({ title: r.headline, url }); return; } catch {}
+                          }
+                          try { await navigator.clipboard.writeText(url); toast.success("Proof link copied"); }
+                          catch { toast.error("Could not copy link"); }
+                        }}
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 );
               })}
