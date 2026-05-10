@@ -82,8 +82,26 @@ function SuccessPage() {
               Thank you, <span className="font-serif italic text-gradient-gold">Guardian.</span>
             </h1>
             <p className="mt-6 text-lg text-ivory/80">
-              Your gift is now a thread in the fabric of dignity. We'll send a confirmation when your payment processes.
+              Your gift has been recorded. We'll send a confirmation the moment payment processing comes online.
             </p>
+            <div className="mx-auto mt-8 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-midnight-deep/50 px-4 py-2 text-xs uppercase tracking-[0.2em] text-gold">
+              <span className="h-1.5 w-1.5 animate-pulse-glow rounded-full bg-gold" />
+              Status: pending — awaiting Stripe activation
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-secondary/40 py-10">
+          <div className="mx-auto max-w-3xl px-6">
+            <div className="rounded-2xl border border-border bg-card p-6 text-sm">
+              <div className="font-display text-lg font-semibold">What happens next</div>
+              <ol className="mt-3 list-decimal space-y-2 pl-5 text-muted-foreground">
+                <li>Your intent is safely stored against your account — no card has been charged.</li>
+                <li>Once our administrator finishes the Stripe handshake, you'll receive an email with a one-click confirm-and-charge link for the exact amount you pledged.</li>
+                <li>You can review the gift any time on your <Link to="/account" className="font-medium text-foreground underline-offset-4 hover:underline">Guardian dashboard</Link>.</li>
+                <li>Until then, your name appears on the Wall of Pledges and is counted toward the project's momentum.</li>
+              </ol>
+            </div>
           </div>
         </section>
 
