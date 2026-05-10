@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Heart, HandHeart, User as UserIcon } from "lucide-react";
+import { Heart, HandHeart, User as UserIcon, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/atlas/SiteHeader";
 import { SiteFooter } from "@/components/atlas/SiteFooter";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -15,7 +16,26 @@ export const Route = createFileRoute("/_authenticated/account")({
 });
 
 function AccountPage() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const [claiming, setClaiming] = useState(false);
+  const [claimResult, setClaimResult] = useState<"available" | "taken" | null>(null);
+
+  const claimAdmin = async () => {
+    setClaiming(true);
+    const { data, error } = await supabase.rpc("claim_first_admin");
+    setClaiming(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    if (data) {
+      toast.success("You are now an admin. Reloading…");
+      setTimeout(() => window.location.assign("/admin"), 800);
+    } else {
+      setClaimResult("taken");
+      toast.error("An admin already exists. Ask them to grant you the role.");
+    }
+  };
   const [profile, setProfile] = useState<any>(null);
   const [donations, setDonations] = useState<any[]>([]);
   const [application, setApplication] = useState<any>(null);
@@ -97,7 +117,7 @@ function AccountPage() {
               </div>
             </div>
 
-            <aside>
+            <aside className="space-y-6">
               <div className="rounded-2xl border border-border bg-card p-6">
                 <h2 className="font-display text-xl font-semibold">Volunteer</h2>
                 {application ? (
@@ -118,6 +138,35 @@ function AccountPage() {
                     <Link to="/volunteer">
                       <Button className="mt-4 w-full">Apply to volunteer</Button>
                     </Link>
+                  </>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-gold/30 bg-gold/5 p-6">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-gold">
+                  <ShieldCheck className="h-3 w-3" /> Citadel control
+                </div>
+                {isAdmin ? (
+                  <>
+                    <h2 className="mt-3 font-display text-xl font-semibold">You are an admin</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Open the admin console to view donations, applications, and the Stripe checklist.
+                    </p>
+                    <Link to="/admin">
+                      <Button className="mt-4 w-full">Open admin console</Button>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="mt-3 font-display text-xl font-semibold">Claim admin access</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {claimResult === "taken"
+                        ? "An admin already exists for this Citadel. Ask them to promote you."
+                        : "If no admin has been set up yet, you can claim the first admin role for this Citadel."}
+                    </p>
+                    <Button onClick={claimAdmin} disabled={claiming || claimResult === "taken"} className="mt-4 w-full">
+                      {claiming ? "Claiming…" : "Claim first-admin role"}
+                    </Button>
                   </>
                 )}
               </div>

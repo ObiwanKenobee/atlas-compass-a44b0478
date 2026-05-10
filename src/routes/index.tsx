@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AnimatedCounter } from "@/components/atlas/AnimatedCounter";
 import { Globe } from "@/components/atlas/Globe";
 import { Button } from "@/components/ui/button";
+import { SiteHeader } from "@/components/atlas/SiteHeader";
+import { SiteFooter } from "@/components/atlas/SiteFooter";
 import heroImg from "@/assets/hero.jpg";
 import story1 from "@/assets/story-1.jpg";
 import story2 from "@/assets/story-2.jpg";
@@ -9,7 +11,7 @@ import story3 from "@/assets/story-3.jpg";
 import {
   ArrowRight,
   Heart,
-  Sparkles,
+  
   ShieldCheck,
   Globe2,
   Users,
@@ -43,7 +45,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Header />
+      <SiteHeader />
       <main>
         <Hero />
         <ImpactStrip />
@@ -53,45 +55,8 @@ function Index() {
         <Testimonials />
         <CallToAction />
       </main>
-      <Footer />
+      <SiteFooter />
     </div>
-  );
-}
-
-/* ---------- Header ---------- */
-function Header() {
-  const links = [
-    ["Mission", "#mission"],
-    ["Projects", "#projects"],
-    ["Stories", "#stories"],
-    ["Transparency", "#transparency"],
-  ];
-  return (
-    <header className="fixed top-0 z-50 w-full border-b border-border/40 bg-background/70 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="grid h-8 w-8 place-items-center rounded-md bg-sacred shadow-glow">
-            <Sparkles className="h-4 w-4 text-gold" />
-          </div>
-          <span className="font-display text-lg font-semibold tracking-tight">
-            Atlas <span className="text-gradient-gold">Sanctum</span>
-          </span>
-        </Link>
-        <nav className="hidden items-center gap-8 md:flex">
-          {links.map(([l, h]) => (
-            <a key={l} href={h} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              {l}
-            </a>
-          ))}
-        </nav>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="hidden sm:inline-flex">Sign in</Button>
-          <Button size="sm" className="bg-foreground text-background hover:bg-foreground/90">
-            <Heart className="mr-1.5 h-3.5 w-3.5" /> Donate
-          </Button>
-        </div>
-      </div>
-    </header>
   );
 }
 
@@ -125,15 +90,19 @@ function Hero() {
             where every gift is traceable, every story is honored, and every child is seen.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-4">
-            <Button size="lg" className="bg-gold-gradient text-midnight-deep shadow-glow hover:opacity-95">
-              <Heart className="mr-2 h-4 w-4" /> Donate now
-            </Button>
-            <Button size="lg" variant="outline" className="border-ivory/30 bg-transparent text-ivory hover:bg-ivory/10">
-              Explore projects <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            <a href="#mission" className="text-sm text-ivory/70 underline-offset-4 hover:text-gold hover:underline">
+            <Link to="/donate">
+              <Button size="lg" className="bg-gold-gradient text-midnight-deep shadow-glow hover:opacity-95">
+                <Heart className="mr-2 h-4 w-4" /> Donate now
+              </Button>
+            </Link>
+            <Link to="/projects">
+              <Button size="lg" variant="outline" className="border-ivory/30 bg-transparent text-ivory hover:bg-ivory/10">
+                Explore projects <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+            <Link to="/volunteer" className="text-sm text-ivory/70 underline-offset-4 hover:text-gold hover:underline">
               Become a Guardian →
-            </a>
+            </Link>
           </div>
 
           <div className="mt-14 flex flex-wrap items-center gap-x-8 gap-y-3 text-xs uppercase tracking-widest text-ivory/40">
@@ -244,9 +213,9 @@ function Stories() {
               Lives, not <span className="font-serif italic">numbers.</span>
             </h2>
           </div>
-          <a href="#" className="text-sm font-medium text-foreground underline-offset-4 hover:underline">
+          <Link to="/projects" className="text-sm font-medium text-foreground underline-offset-4 hover:underline">
             All stories <ArrowRight className="ml-1 inline h-4 w-4" />
-          </a>
+          </Link>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
@@ -369,9 +338,11 @@ function Projects() {
                         +24
                       </div>
                     </div>
-                    <Button size="sm" variant="outline" className="border-foreground/20 hover:bg-foreground hover:text-background">
-                      Support <ArrowRight className="ml-1 h-3.5 w-3.5" />
-                    </Button>
+                    <Link to="/projects">
+                      <Button size="sm" variant="outline" className="border-foreground/20 hover:bg-foreground hover:text-background">
+                        Support <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -411,9 +382,11 @@ function Transparency() {
                 </div>
               ))}
             </div>
-            <Button className="mt-10 bg-ivory text-midnight-deep hover:bg-ivory/90">
-              Open transparency portal <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            <Link to="/transparency">
+              <Button className="mt-10 bg-ivory text-midnight-deep hover:bg-ivory/90">
+                Open transparency portal <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
 
           <div className="lg:col-span-7">
@@ -531,9 +504,11 @@ function CallToAction() {
                   </button>
                 ))}
               </div>
-              <Button className="mt-4 w-full bg-gold-gradient text-midnight-deep shadow-glow hover:opacity-95" size="lg">
-                <Heart className="mr-2 h-4 w-4" /> Give monthly
-              </Button>
+              <Link to="/donate" search={{ monthly: 1 } as never}>
+                <Button className="mt-4 w-full bg-gold-gradient text-midnight-deep shadow-glow hover:opacity-95" size="lg">
+                  <Heart className="mr-2 h-4 w-4" /> Give monthly
+                </Button>
+              </Link>
               <p className="mt-3 text-center text-[11px] text-ivory/50">
                 Secure checkout. Cancel anytime. Tax-deductible where applicable.
               </p>
@@ -545,50 +520,3 @@ function CallToAction() {
   );
 }
 
-/* ---------- Footer ---------- */
-function Footer() {
-  const cols = [
-    { title: "Mission", items: ["About", "Projects", "Stories", "Transparency"] },
-    { title: "Get involved", items: ["Donate", "Volunteer", "Partners", "Guardians"] },
-    { title: "Resources", items: ["Reports", "Press", "Careers", "Contact"] },
-  ];
-  return (
-    <footer className="border-t border-border bg-secondary/40">
-      <div className="mx-auto max-w-7xl px-6 py-16">
-        <div className="grid gap-12 md:grid-cols-5">
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-2">
-              <div className="grid h-8 w-8 place-items-center rounded-md bg-sacred">
-                <Sparkles className="h-4 w-4 text-gold" />
-              </div>
-              <span className="font-display text-lg font-semibold">
-                Atlas <span className="text-gradient-gold">Sanctum</span>
-              </span>
-            </div>
-            <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              A humanitarian command center building sanctuaries for children at planetary scale.
-            </p>
-          </div>
-          {cols.map((c) => (
-            <div key={c.title}>
-              <div className="mb-4 text-xs uppercase tracking-widest text-muted-foreground">{c.title}</div>
-              <ul className="space-y-2 text-sm">
-                {c.items.map((i) => (
-                  <li key={i}><a href="#" className="text-foreground/80 hover:text-foreground">{i}</a></li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 text-xs text-muted-foreground md:flex-row">
-          <span>© 2026 Atlas Sanctum. Built with care for the world.</span>
-          <span className="flex gap-5">
-            <a href="#" className="hover:text-foreground">Privacy</a>
-            <a href="#" className="hover:text-foreground">Terms</a>
-            <a href="#" className="hover:text-foreground">Cookies</a>
-          </span>
-        </div>
-      </div>
-    </footer>
-  );
-}
