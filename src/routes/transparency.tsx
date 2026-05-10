@@ -44,6 +44,10 @@ type Report = {
   total_distributed: number;
   beneficiaries_reached: number;
   allocations: Record<string, number>;
+  attachment_url: string | null;
+  share_url: string | null;
+  verified: boolean;
+  verified_by: string | null;
 };
 
 function TransparencyPage() {
