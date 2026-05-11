@@ -99,6 +99,9 @@ function AdminDonationsPage() {
   }, [isAdmin, loading, navigate]);
 
   useEffect(() => {
+    setEventTypeFilter("all");
+    setEventSearch("");
+    setEventPage(0);
     if (!selected) {
       setEvents([]);
       return;
@@ -114,6 +117,10 @@ function AdminDonationsPage() {
         setEventsLoading(false);
       });
   }, [selected]);
+
+  useEffect(() => {
+    setEventPage(0);
+  }, [eventTypeFilter, eventSearch]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
