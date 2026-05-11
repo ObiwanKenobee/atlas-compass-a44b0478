@@ -72,6 +72,9 @@ function AdminDonationsPage() {
   const [events, setEvents] = useState<StripeEvent[]>([]);
   const [eventsLoading, setEventsLoading] = useState(false);
   const [eventTypeFilter, setEventTypeFilter] = useState<string>("all");
+  const [eventSearch, setEventSearch] = useState("");
+  const [eventPage, setEventPage] = useState(0);
+  const EVENTS_PER_PAGE = 10;
 
   useEffect(() => {
     if (loading) return;
