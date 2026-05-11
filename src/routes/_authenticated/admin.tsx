@@ -69,16 +69,28 @@ function AdminPage() {
                   Donations currently save as <span className="text-gold">pending</span> until Stripe is wired.
                 </p>
               </div>
-              <Link to="/admin/stripe">
-                <Button className="bg-gold-gradient text-midnight-deep shadow-glow hover:opacity-95">
-                  Stripe enablement →
-                </Button>
-              </Link>
-              <Link to="/admin/donations">
-                <Button variant="outline" className="border-ivory/30 bg-transparent text-ivory hover:bg-ivory/10">
-                  All donations →
-                </Button>
-              </Link>
+              <div className="flex flex-wrap items-center gap-2">
+                <Link to="/admin/stripe">
+                  <Button className="bg-gold-gradient text-midnight-deep shadow-glow hover:opacity-95">
+                    Stripe →
+                  </Button>
+                </Link>
+                <Link to="/admin/donations">
+                  <Button variant="outline" className="border-ivory/30 bg-transparent text-ivory hover:bg-ivory/10">
+                    Donations →
+                  </Button>
+                </Link>
+                <Link to="/admin/reports">
+                  <Button variant="outline" className="border-ivory/30 bg-transparent text-ivory hover:bg-ivory/10">
+                    <FileText className="mr-1.5 h-3.5 w-3.5" /> Reports
+                  </Button>
+                </Link>
+                <Link to="/admin/email">
+                  <Button variant="outline" className="border-ivory/30 bg-transparent text-ivory hover:bg-ivory/10">
+                    <Mail className="mr-1.5 h-3.5 w-3.5" /> Email
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </section>
