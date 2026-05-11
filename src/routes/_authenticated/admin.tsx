@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Heart, Users, Target, ShieldCheck, FileText } from "lucide-react";
+import { Heart, Users, Target, ShieldCheck, FileText, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/atlas/SiteHeader";
 import { SiteFooter } from "@/components/atlas/SiteFooter";
