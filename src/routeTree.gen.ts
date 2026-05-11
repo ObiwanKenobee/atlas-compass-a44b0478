@@ -22,6 +22,7 @@ import { Route as DonateSuccessRouteImport } from './routes/donate.success'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminStripeRouteImport } from './routes/_authenticated/admin.stripe'
+import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin.reports'
 import { Route as AuthenticatedAdminDonationsRouteImport } from './routes/_authenticated/admin.donations'
 import { Route as ApiPublicWebhooksStripeRouteImport } from './routes/api/public/webhooks/stripe'
 
@@ -90,6 +91,12 @@ const AuthenticatedAdminStripeRoute =
     path: '/stripe',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminReportsRoute =
+  AuthenticatedAdminReportsRouteImport.update({
+    id: '/reports',
+    path: '/reports',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminDonationsRoute =
   AuthenticatedAdminDonationsRouteImport.update({
     id: '/donations',
@@ -115,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/donate/success': typeof DonateSuccessRoute
   '/projects/$slug': typeof ProjectsSlugRoute
   '/admin/donations': typeof AuthenticatedAdminDonationsRoute
+  '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/stripe': typeof AuthenticatedAdminStripeRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
@@ -131,6 +139,7 @@ export interface FileRoutesByTo {
   '/donate/success': typeof DonateSuccessRoute
   '/projects/$slug': typeof ProjectsSlugRoute
   '/admin/donations': typeof AuthenticatedAdminDonationsRoute
+  '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/stripe': typeof AuthenticatedAdminStripeRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
@@ -149,6 +158,7 @@ export interface FileRoutesById {
   '/donate/success': typeof DonateSuccessRoute
   '/projects/$slug': typeof ProjectsSlugRoute
   '/_authenticated/admin/donations': typeof AuthenticatedAdminDonationsRoute
+  '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/_authenticated/admin/stripe': typeof AuthenticatedAdminStripeRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
@@ -167,6 +177,7 @@ export interface FileRouteTypes {
     | '/donate/success'
     | '/projects/$slug'
     | '/admin/donations'
+    | '/admin/reports'
     | '/admin/stripe'
     | '/api/public/webhooks/stripe'
   fileRoutesByTo: FileRoutesByTo
@@ -183,6 +194,7 @@ export interface FileRouteTypes {
     | '/donate/success'
     | '/projects/$slug'
     | '/admin/donations'
+    | '/admin/reports'
     | '/admin/stripe'
     | '/api/public/webhooks/stripe'
   id:
@@ -200,6 +212,7 @@ export interface FileRouteTypes {
     | '/donate/success'
     | '/projects/$slug'
     | '/_authenticated/admin/donations'
+    | '/_authenticated/admin/reports'
     | '/_authenticated/admin/stripe'
     | '/api/public/webhooks/stripe'
   fileRoutesById: FileRoutesById
@@ -309,6 +322,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminStripeRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/reports': {
+      id: '/_authenticated/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AuthenticatedAdminReportsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/donations': {
       id: '/_authenticated/admin/donations'
       path: '/donations'
@@ -328,11 +348,13 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminDonationsRoute: typeof AuthenticatedAdminDonationsRoute
+  AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
   AuthenticatedAdminStripeRoute: typeof AuthenticatedAdminStripeRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminDonationsRoute: AuthenticatedAdminDonationsRoute,
+  AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
   AuthenticatedAdminStripeRoute: AuthenticatedAdminStripeRoute,
 }
 
@@ -390,3 +412,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
