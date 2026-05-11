@@ -3,22 +3,36 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 /**
- * Sends a donation confirmation email to the donor.
+ * Send the donor confirmation receipt for a confirmed donation.
  *
- * Enqueues via Lovable's transactional email queue at
- * /lovable/email/queue/enqueue. If email infrastructure is not yet set up
- * (no domain configured), this returns { skipped: true } so the webhook
- * can keep processing without failing.
+ * Flow:
+ *  1. Load the donation + project name.
+ *  2. Insert a pending row into donation_email_log so admins can audit every attempt.
+ *  3. POST to /lovable/email/transactional/send with the `donation-confirmation`
+ *     template. The transactional pipeline takes care of rendering, queueing,
+ *     retries, and the actual SMTP handoff.
+ *  4. Update the log row with the final status / error.
+ *
+ * If the transactional pipeline is not yet provisioned (no email domain),
+ * the call returns a non-2xx and we record `infra_pending` in the log so the
+ * admin email page surfaces the issue without breaking the webhook.
  */
 export const sendDonationReceipt = createServerFn({ method: "POST" })
   .inputValidator((data) =>
-    z.object({ donationId: z.string().uuid() }).parse(data),
+    z
+      .object({
+        donationId: z.string().uuid(),
+        trigger: z.enum(["webhook", "manual_test", "resend"]).optional(),
+      })
+      .parse(data),
   )
   .handler(async ({ data }) => {
+    const trigger = data.trigger ?? "webhook";
+
     const { data: donation } = await supabaseAdmin
       .from("donations")
       .select(
-        "id, amount, currency, donation_type, donor_name, donor_email, message, anonymous, receipt_url, project_id, confirmed_at",
+        "id, amount, currency, donation_type, donor_name, donor_email, message, anonymous, receipt_url, project_id",
       )
       .eq("id", data.donationId)
       .maybeSingle();
@@ -34,89 +48,87 @@ export const sendDonationReceipt = createServerFn({ method: "POST" })
         .select("name")
         .eq("id", donation.project_id)
         .maybeSingle();
-      projectName = (p as any)?.name ?? null;
+      projectName = (p as { name?: string } | null)?.name ?? null;
     }
 
-    const amount = `$${Number(donation.amount).toLocaleString()}`;
-    const cadence = donation.donation_type === "monthly" ? " / month" : "";
-    const supporting = projectName ? ` to ${projectName}` : " where it is needed most";
-    const greeting = donation.anonymous ? "Guardian" : donation.donor_name || "Guardian";
+    const messageId = `donation-${donation.id}-${Date.now()}`;
+    const greeting = donation.anonymous
+      ? "Guardian"
+      : donation.donor_name || "Guardian";
 
-    const subject = `Your gift of ${amount}${cadence} is confirmed — Atlas Sanctum`;
+    // 1) audit log row — pending
+    const { data: logRow } = await supabaseAdmin
+      .from("donation_email_log" as never)
+      .insert({
+        donation_id: donation.id,
+        recipient_email: donation.donor_email,
+        template_name: "donation-confirmation",
+        status: "pending",
+        message_id: messageId,
+        trigger,
+      } as never)
+      .select("id")
+      .single();
 
-    const html = `
-      <div style="font-family: ui-sans-serif, system-ui, sans-serif; color: #1a1a1a; max-width: 560px; margin: 0 auto; padding: 32px;">
-        <div style="text-align:center; padding: 24px 0; border-bottom: 1px solid #eee;">
-          <div style="font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase; color: #b8860b;">Atlas Sanctum</div>
-          <h1 style="font-size: 28px; margin: 12px 0 0; font-weight: 600;">Thank you, ${escapeHtml(greeting)}.</h1>
-        </div>
-        <p style="margin-top: 24px; font-size: 16px; line-height: 1.6;">
-          Your gift of <strong>${amount}${cadence}</strong>${escapeHtml(supporting)} has been confirmed.
-        </p>
-        ${donation.message ? `<blockquote style="margin: 24px 0; padding: 16px 20px; border-left: 3px solid #b8860b; font-style: italic; color: #444;">"${escapeHtml(donation.message)}"</blockquote>` : ""}
-        <p style="margin-top: 24px; font-size: 14px; line-height: 1.6; color: #555;">
-          A full receipt is attached below for your records.
-        </p>
-        ${
-          donation.receipt_url
-            ? `<p style="margin-top: 16px;"><a href="${donation.receipt_url}" style="display: inline-block; background: #b8860b; color: #1a1a1a; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">Download receipt</a></p>`
-            : ""
-        }
-        <hr style="margin: 32px 0; border: none; border-top: 1px solid #eee;" />
-        <p style="font-size: 12px; color: #888; line-height: 1.6;">
-          You'll find this gift on your Guardian dashboard, alongside the field updates from the sanctum it supports.
-          <br/><br/>
-          Atlas Sanctum — a humanitarian command center for compassion.
-        </p>
-      </div>
-    `;
+    const logId = (logRow as { id?: string } | null)?.id ?? null;
 
-    const text = `Thank you, ${greeting}.
+    // 2) hand off to the transactional pipeline
+    const baseUrl = process.env.SUPABASE_URL ?? "";
+    const appOrigin = process.env.APP_ORIGIN ?? "";
+    const sendUrl = appOrigin
+      ? `${appOrigin}/lovable/email/transactional/send`
+      : "/lovable/email/transactional/send";
 
-Your gift of ${amount}${cadence}${supporting} has been confirmed.
-${donation.message ? `\n"${donation.message}"\n` : ""}
-${donation.receipt_url ? `Receipt: ${donation.receipt_url}\n` : ""}
-Atlas Sanctum`;
+    let status: "sent" | "failed" | "infra_pending" = "infra_pending";
+    let errorMessage: string | null = null;
 
-    // Enqueue through Lovable Emails queue. If infra is not yet provisioned,
-    // we return skipped so the webhook stays green.
     try {
-      const url = `${process.env.SUPABASE_URL}/rest/v1/rpc/enqueue_email`;
-      const res = await fetch(url, {
+      const res = await fetch(sendUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
-          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
+          // Service-role auth: the transactional route accepts admin JWTs.
+          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY ?? ""}`,
         },
         body: JSON.stringify({
-          queue: "transactional_emails",
-          message: {
-            template_name: "donation-confirmation",
-            message_id: `donation-${donation.id}-${donation.confirmed_at ?? Date.now()}`,
-            to: donation.donor_email,
-            subject,
-            html,
-            text,
-            metadata: { donation_id: donation.id, project_id: donation.project_id },
+          templateName: "donation-confirmation",
+          recipientEmail: donation.donor_email,
+          idempotencyKey: messageId,
+          templateData: {
+            name: greeting,
+            amount: Number(donation.amount),
+            cadence: donation.donation_type === "monthly" ? "monthly" : "one_time",
+            projectName,
+            receiptUrl: donation.receipt_url,
+            donorMessage: donation.message,
           },
         }),
       });
-      if (!res.ok) {
+      if (res.ok) {
+        status = "sent";
+      } else {
         const body = await res.text();
-        return { skipped: true, reason: `enqueue failed: ${res.status} ${body.slice(0, 140)}` };
+        // 404 / connection refused means email infra hasn't been scaffolded yet.
+        if (res.status === 404 || res.status === 503) {
+          status = "infra_pending";
+          errorMessage = `Email infrastructure not provisioned (${res.status}).`;
+        } else {
+          status = "failed";
+          errorMessage = `${res.status} ${body.slice(0, 240)}`;
+        }
       }
-      return { sent: true };
     } catch (err) {
-      return { skipped: true, reason: (err as Error).message };
+      status = "infra_pending";
+      errorMessage = `Send endpoint unreachable: ${(err as Error).message}`;
     }
-  });
 
-function escapeHtml(s: string) {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
+    // 3) close out the audit row
+    if (logId) {
+      await supabaseAdmin
+        .from("donation_email_log" as never)
+        .update({ status, error_message: errorMessage } as never)
+        .eq("id", logId);
+    }
+
+    return { status, errorMessage, logId, messageId, baseUrl };
+  });

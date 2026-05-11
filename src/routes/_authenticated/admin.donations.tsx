@@ -72,6 +72,9 @@ function AdminDonationsPage() {
   const [events, setEvents] = useState<StripeEvent[]>([]);
   const [eventsLoading, setEventsLoading] = useState(false);
   const [eventTypeFilter, setEventTypeFilter] = useState<string>("all");
+  const [eventSearch, setEventSearch] = useState("");
+  const [eventPage, setEventPage] = useState(0);
+  const EVENTS_PER_PAGE = 10;
 
   useEffect(() => {
     if (loading) return;
@@ -96,6 +99,9 @@ function AdminDonationsPage() {
   }, [isAdmin, loading, navigate]);
 
   useEffect(() => {
+    setEventTypeFilter("all");
+    setEventSearch("");
+    setEventPage(0);
     if (!selected) {
       setEvents([]);
       return;
@@ -111,6 +117,10 @@ function AdminDonationsPage() {
         setEventsLoading(false);
       });
   }, [selected]);
+
+  useEffect(() => {
+    setEventPage(0);
+  }, [eventTypeFilter, eventSearch]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -331,18 +341,29 @@ function AdminDonationsPage() {
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                     <h3 className="font-display text-lg font-semibold">Stripe event history</h3>
                     {events.length > 0 && (
-                      <select
-                        value={eventTypeFilter}
-                        onChange={(e) => setEventTypeFilter(e.target.value)}
-                        className="rounded-md border border-border bg-card px-2 py-1 text-xs"
-                      >
-                        <option value="all">All events ({events.length})</option>
-                        {Array.from(new Set(events.map((e) => e.type))).map((t) => (
-                          <option key={t} value={t}>
-                            {t} ({events.filter((e) => e.type === t).length})
-                          </option>
-                        ))}
-                      </select>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <select
+                          value={eventTypeFilter}
+                          onChange={(e) => setEventTypeFilter(e.target.value)}
+                          className="rounded-md border border-border bg-card px-2 py-1 text-xs"
+                        >
+                          <option value="all">All events ({events.length})</option>
+                          {Array.from(new Set(events.map((e) => e.type))).map((t) => (
+                            <option key={t} value={t}>
+                              {t} ({events.filter((e) => e.type === t).length})
+                            </option>
+                          ))}
+                        </select>
+                        <div className="relative">
+                          <Search className="pointer-events-none absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            value={eventSearch}
+                            onChange={(e) => setEventSearch(e.target.value)}
+                            placeholder="Search event id, type, payload…"
+                            className="h-7 w-56 pl-7 text-xs"
+                          />
+                        </div>
+                      </div>
                     )}
                   </div>
                   {eventsLoading ? (
@@ -355,45 +376,87 @@ function AdminDonationsPage() {
                     </div>
                   ) : (
                     (() => {
-                      const filteredEvents = eventTypeFilter === "all" ? events : events.filter((e) => e.type === eventTypeFilter);
+                      const q = eventSearch.trim().toLowerCase();
+                      const filteredEvents = events.filter((e) => {
+                        if (eventTypeFilter !== "all" && e.type !== eventTypeFilter) return false;
+                        if (!q) return true;
+                        const hay = `${e.type} ${e.event_id} ${JSON.stringify(e.payload)}`.toLowerCase();
+                        return hay.includes(q);
+                      });
                       if (filteredEvents.length === 0) {
                         return (
                           <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                            No events of this type.
+                            No events match this filter.
                           </p>
                         );
                       }
+                      const totalPages = Math.max(1, Math.ceil(filteredEvents.length / EVENTS_PER_PAGE));
+                      const page = Math.min(eventPage, totalPages - 1);
+                      const pageEvents = filteredEvents.slice(
+                        page * EVENTS_PER_PAGE,
+                        page * EVENTS_PER_PAGE + EVENTS_PER_PAGE,
+                      );
                       return (
-                        <ol className="relative space-y-4 border-l border-border pl-5">
-                          {filteredEvents.map((ev) => (
-                            <li key={ev.id} className="relative">
-                              <span className="absolute -left-[27px] top-1 grid h-4 w-4 place-items-center rounded-full border border-border bg-background">
-                                <EventIcon type={ev.type} />
+                        <>
+                          <ol className="relative space-y-4 border-l border-border pl-5">
+                            {pageEvents.map((ev) => (
+                              <li key={ev.id} className="relative">
+                                <span className="absolute -left-[27px] top-1 grid h-4 w-4 place-items-center rounded-full border border-border bg-background">
+                                  <EventIcon type={ev.type} />
+                                </span>
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="font-mono text-xs">{ev.type}</div>
+                                  <button
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(JSON.stringify(ev.payload, null, 2));
+                                      toast.success("Event payload copied");
+                                    }}
+                                    className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
+                                  >
+                                    <Copy className="h-3 w-3" /> Copy payload
+                                  </button>
+                                </div>
+                                <div className="text-[11px] text-muted-foreground">
+                                  {new Date(ev.created_at).toLocaleString()} · {ev.event_id}
+                                </div>
+                                <details className="mt-1">
+                                  <summary className="cursor-pointer text-[11px] text-muted-foreground hover:text-foreground">View payload</summary>
+                                  <pre className="mt-2 max-h-60 overflow-auto rounded-md bg-secondary/60 p-3 text-[10px] leading-relaxed">
+                                    {JSON.stringify(ev.payload, null, 2)}
+                                  </pre>
+                                </details>
+                              </li>
+                            ))}
+                          </ol>
+                          {totalPages > 1 && (
+                            <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                              <span>
+                                Showing {page * EVENTS_PER_PAGE + 1}–
+                                {Math.min((page + 1) * EVENTS_PER_PAGE, filteredEvents.length)} of {filteredEvents.length}
                               </span>
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="font-mono text-xs">{ev.type}</div>
-                                <button
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(JSON.stringify(ev.payload, null, 2));
-                                    toast.success("Event payload copied");
-                                  }}
-                                  className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7"
+                                  disabled={page === 0}
+                                  onClick={() => setEventPage(page - 1)}
                                 >
-                                  <Copy className="h-3 w-3" /> Copy payload
-                                </button>
+                                  ← Prev
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7"
+                                  disabled={page >= totalPages - 1}
+                                  onClick={() => setEventPage(page + 1)}
+                                >
+                                  Next →
+                                </Button>
                               </div>
-                              <div className="text-[11px] text-muted-foreground">
-                                {new Date(ev.created_at).toLocaleString()} · {ev.event_id}
-                              </div>
-                              <details className="mt-1">
-                                <summary className="cursor-pointer text-[11px] text-muted-foreground hover:text-foreground">View payload</summary>
-                                <pre className="mt-2 max-h-60 overflow-auto rounded-md bg-secondary/60 p-3 text-[10px] leading-relaxed">
-                                  {JSON.stringify(ev.payload, null, 2)}
-                                </pre>
-                              </details>
-                            </li>
-                          ))}
-                        </ol>
+                            </div>
+                          )}
+                        </>
                       );
                     })()
                   )}
