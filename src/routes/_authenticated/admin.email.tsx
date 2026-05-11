@@ -65,6 +65,21 @@ function AdminEmailPage() {
     }
     setSending(true);
     setLastResult(null);
+    const messageId = `email-test-${Date.now()}`;
+    // Audit row first — admins can insert under their own policy.
+    const { data: logRow } = await supabase
+      .from("donation_email_log")
+      .insert({
+        recipient_email: testTo,
+        template_name: "donation-confirmation",
+        status: "pending",
+        trigger: "manual_test",
+        message_id: messageId,
+      })
+      .select("id")
+      .single();
+    const logId = (logRow as { id?: string } | null)?.id ?? null;
+
     try {
       const { data: sess } = await supabase.auth.getSession();
       const res = await fetch("/lovable/email/transactional/send", {
@@ -76,20 +91,38 @@ function AdminEmailPage() {
         body: JSON.stringify({
           templateName: "donation-confirmation",
           recipientEmail: testTo,
-          idempotencyKey: `email-test-${Date.now()}`,
+          idempotencyKey: messageId,
           templateData: { name: "Atlas tester" },
         }),
       });
       const text = await res.text();
+      let status: "sent" | "failed" | "infra_pending" = "sent";
+      let errMsg: string | null = null;
       if (!res.ok) {
-        setLastResult({ ok: false, message: `${res.status} — ${text.slice(0, 240)}` });
+        status = res.status === 404 || res.status === 503 ? "infra_pending" : "failed";
+        errMsg = `${res.status} — ${text.slice(0, 240)}`;
+        setLastResult({ ok: false, message: errMsg });
       } else {
         setLastResult({ ok: true, message: text || "Queued successfully." });
         toast.success("Test enqueued");
       }
+      if (logId) {
+        await supabase
+          .from("donation_email_log")
+          .update({ status, error_message: errMsg })
+          .eq("id", logId);
+      }
       loadLogs();
-    } catch (err: any) {
-      setLastResult({ ok: false, message: err.message ?? "Request failed" });
+    } catch (err) {
+      const msg = (err as Error).message ?? "Request failed";
+      setLastResult({ ok: false, message: msg });
+      if (logId) {
+        await supabase
+          .from("donation_email_log")
+          .update({ status: "infra_pending", error_message: msg })
+          .eq("id", logId);
+      }
+      loadLogs();
     } finally {
       setSending(false);
     }
