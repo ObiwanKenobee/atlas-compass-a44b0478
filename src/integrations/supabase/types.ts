@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      donation_email_log: {
+        Row: {
+          created_at: string
+          donation_id: string | null
+          error_message: string | null
+          id: string
+          message_id: string | null
+          recipient_email: string
+          status: string
+          template_name: string
+          trigger: string
+        }
+        Insert: {
+          created_at?: string
+          donation_id?: string | null
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          recipient_email: string
+          status?: string
+          template_name?: string
+          trigger?: string
+        }
+        Update: {
+          created_at?: string
+          donation_id?: string | null
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          recipient_email?: string
+          status?: string
+          template_name?: string
+          trigger?: string
+        }
+        Relationships: []
+      }
       donations: {
         Row: {
           amount: number
@@ -94,6 +130,7 @@ export type Database = {
       monthly_reports: {
         Row: {
           allocations: Json
+          attachment_path: string | null
           attachment_url: string | null
           beneficiaries_reached: number
           created_at: string
@@ -102,15 +139,24 @@ export type Database = {
           month: string
           narrative: string | null
           published: boolean
+          published_at: string | null
+          published_by: string | null
+          share_expires_at: string | null
+          share_token: string | null
           share_url: string | null
           total_distributed: number
           total_raised: number
           updated_at: string
+          uploaded_at: string | null
+          uploaded_by: string | null
           verified: boolean
+          verified_at: string | null
           verified_by: string | null
+          verified_by_user: string | null
         }
         Insert: {
           allocations?: Json
+          attachment_path?: string | null
           attachment_url?: string | null
           beneficiaries_reached?: number
           created_at?: string
@@ -119,15 +165,24 @@ export type Database = {
           month: string
           narrative?: string | null
           published?: boolean
+          published_at?: string | null
+          published_by?: string | null
+          share_expires_at?: string | null
+          share_token?: string | null
           share_url?: string | null
           total_distributed?: number
           total_raised?: number
           updated_at?: string
+          uploaded_at?: string | null
+          uploaded_by?: string | null
           verified?: boolean
+          verified_at?: string | null
           verified_by?: string | null
+          verified_by_user?: string | null
         }
         Update: {
           allocations?: Json
+          attachment_path?: string | null
           attachment_url?: string | null
           beneficiaries_reached?: number
           created_at?: string
@@ -136,12 +191,20 @@ export type Database = {
           month?: string
           narrative?: string | null
           published?: boolean
+          published_at?: string | null
+          published_by?: string | null
+          share_expires_at?: string | null
+          share_token?: string | null
           share_url?: string | null
           total_distributed?: number
           total_raised?: number
           updated_at?: string
+          uploaded_at?: string | null
+          uploaded_by?: string | null
           verified?: boolean
+          verified_at?: string | null
           verified_by?: string | null
+          verified_by_user?: string | null
         }
         Relationships: []
       }
