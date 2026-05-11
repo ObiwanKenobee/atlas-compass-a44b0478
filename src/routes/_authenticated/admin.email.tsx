@@ -44,12 +44,12 @@ function AdminEmailPage() {
   }, [isAdmin, loading, navigate, user]);
 
   async function loadLogs() {
-    // email_send_log is created once email infrastructure is provisioned.
-    const { data, error } = await (supabase as any)
-      .from("email_send_log")
+    // donation_email_log records every receipt attempt (webhook + test).
+    const { data, error } = await supabase
+      .from("donation_email_log")
       .select("id, template_name, recipient_email, status, error_message, created_at")
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(50);
     if (error) {
       setLogsAvailable(false);
       return;
