@@ -26,6 +26,7 @@ import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminEmailRouteImport } from './routes/_authenticated/admin.email'
 import { Route as AuthenticatedAdminDonationsRouteImport } from './routes/_authenticated/admin.donations'
 import { Route as ApiPublicWebhooksStripeRouteImport } from './routes/api/public/webhooks/stripe'
+import { Route as ApiPublicReportsTokenRouteImport } from './routes/api/public/reports/$token'
 
 const VolunteerRoute = VolunteerRouteImport.update({
   id: '/volunteer',
@@ -114,6 +115,11 @@ const ApiPublicWebhooksStripeRoute = ApiPublicWebhooksStripeRouteImport.update({
   path: '/api/public/webhooks/stripe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicReportsTokenRoute = ApiPublicReportsTokenRouteImport.update({
+  id: '/api/public/reports/$token',
+  path: '/api/public/reports/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/admin/email': typeof AuthenticatedAdminEmailRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/stripe': typeof AuthenticatedAdminStripeRoute
+  '/api/public/reports/$token': typeof ApiPublicReportsTokenRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
 export interface FileRoutesByTo {
@@ -149,6 +156,7 @@ export interface FileRoutesByTo {
   '/admin/email': typeof AuthenticatedAdminEmailRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/stripe': typeof AuthenticatedAdminStripeRoute
+  '/api/public/reports/$token': typeof ApiPublicReportsTokenRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
 export interface FileRoutesById {
@@ -169,6 +177,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/email': typeof AuthenticatedAdminEmailRoute
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/_authenticated/admin/stripe': typeof AuthenticatedAdminStripeRoute
+  '/api/public/reports/$token': typeof ApiPublicReportsTokenRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
 export interface FileRouteTypes {
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/admin/email'
     | '/admin/reports'
     | '/admin/stripe'
+    | '/api/public/reports/$token'
     | '/api/public/webhooks/stripe'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/admin/email'
     | '/admin/reports'
     | '/admin/stripe'
+    | '/api/public/reports/$token'
     | '/api/public/webhooks/stripe'
   id:
     | '__root__'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/email'
     | '/_authenticated/admin/reports'
     | '/_authenticated/admin/stripe'
+    | '/api/public/reports/$token'
     | '/api/public/webhooks/stripe'
   fileRoutesById: FileRoutesById
 }
@@ -238,6 +250,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   TransparencyRoute: typeof TransparencyRoute
   VolunteerRoute: typeof VolunteerRoute
+  ApiPublicReportsTokenRoute: typeof ApiPublicReportsTokenRoute
   ApiPublicWebhooksStripeRoute: typeof ApiPublicWebhooksStripeRoute
 }
 
@@ -362,6 +375,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksStripeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/reports/$token': {
+      id: '/api/public/reports/$token'
+      path: '/api/public/reports/$token'
+      fullPath: '/api/public/reports/$token'
+      preLoaderRoute: typeof ApiPublicReportsTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -428,8 +448,19 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   TransparencyRoute: TransparencyRoute,
   VolunteerRoute: VolunteerRoute,
+  ApiPublicReportsTokenRoute: ApiPublicReportsTokenRoute,
   ApiPublicWebhooksStripeRoute: ApiPublicWebhooksStripeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
