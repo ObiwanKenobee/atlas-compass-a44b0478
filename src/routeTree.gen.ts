@@ -23,6 +23,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminStripeRouteImport } from './routes/_authenticated/admin.stripe'
 import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin.reports'
+import { Route as AuthenticatedAdminEmailRouteImport } from './routes/_authenticated/admin.email'
 import { Route as AuthenticatedAdminDonationsRouteImport } from './routes/_authenticated/admin.donations'
 import { Route as ApiPublicWebhooksStripeRouteImport } from './routes/api/public/webhooks/stripe'
 
@@ -97,6 +98,11 @@ const AuthenticatedAdminReportsRoute =
     path: '/reports',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminEmailRoute = AuthenticatedAdminEmailRouteImport.update({
+  id: '/email',
+  path: '/email',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAdminDonationsRoute =
   AuthenticatedAdminDonationsRouteImport.update({
     id: '/donations',
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/donate/success': typeof DonateSuccessRoute
   '/projects/$slug': typeof ProjectsSlugRoute
   '/admin/donations': typeof AuthenticatedAdminDonationsRoute
+  '/admin/email': typeof AuthenticatedAdminEmailRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/stripe': typeof AuthenticatedAdminStripeRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/donate/success': typeof DonateSuccessRoute
   '/projects/$slug': typeof ProjectsSlugRoute
   '/admin/donations': typeof AuthenticatedAdminDonationsRoute
+  '/admin/email': typeof AuthenticatedAdminEmailRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/stripe': typeof AuthenticatedAdminStripeRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
@@ -158,6 +166,7 @@ export interface FileRoutesById {
   '/donate/success': typeof DonateSuccessRoute
   '/projects/$slug': typeof ProjectsSlugRoute
   '/_authenticated/admin/donations': typeof AuthenticatedAdminDonationsRoute
+  '/_authenticated/admin/email': typeof AuthenticatedAdminEmailRoute
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/_authenticated/admin/stripe': typeof AuthenticatedAdminStripeRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/donate/success'
     | '/projects/$slug'
     | '/admin/donations'
+    | '/admin/email'
     | '/admin/reports'
     | '/admin/stripe'
     | '/api/public/webhooks/stripe'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/donate/success'
     | '/projects/$slug'
     | '/admin/donations'
+    | '/admin/email'
     | '/admin/reports'
     | '/admin/stripe'
     | '/api/public/webhooks/stripe'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/donate/success'
     | '/projects/$slug'
     | '/_authenticated/admin/donations'
+    | '/_authenticated/admin/email'
     | '/_authenticated/admin/reports'
     | '/_authenticated/admin/stripe'
     | '/api/public/webhooks/stripe'
@@ -329,6 +341,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminReportsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/email': {
+      id: '/_authenticated/admin/email'
+      path: '/email'
+      fullPath: '/admin/email'
+      preLoaderRoute: typeof AuthenticatedAdminEmailRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/donations': {
       id: '/_authenticated/admin/donations'
       path: '/donations'
@@ -348,12 +367,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminDonationsRoute: typeof AuthenticatedAdminDonationsRoute
+  AuthenticatedAdminEmailRoute: typeof AuthenticatedAdminEmailRoute
   AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
   AuthenticatedAdminStripeRoute: typeof AuthenticatedAdminStripeRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminDonationsRoute: AuthenticatedAdminDonationsRoute,
+  AuthenticatedAdminEmailRoute: AuthenticatedAdminEmailRoute,
   AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
   AuthenticatedAdminStripeRoute: AuthenticatedAdminStripeRoute,
 }
